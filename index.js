@@ -20,6 +20,7 @@ const unknownEndpoint = (request, response) => {
 }
 
 //middleware are called in order they are taken into use
+app.use(express.static('build'))
 app.use(cors())
 app.use(express.json()) // middleware for parsing json data and assigning it to request object as body parameter
 app.use(requestLogger) //used after json-parser because body parameter is provided by json-parser
