@@ -1,8 +1,13 @@
+require('dotenv').config()
+
 const express = require('express')
-const cors = require('cors')
+const cors = require('cors') // for Cross Origin Resouse Sharing
+
+const Note = require('./models/note')
 
 const app = express()
 
+/* ---MIDDLEWARE PART--- */
 
 // middleware for logging requests
 const requestLogger = (request, response, next) => {
@@ -19,13 +24,23 @@ const unknownEndpoint = (request, response) => {
     })
 }
 
+// middleware for error handling (are defined with four parameters)
+const errorHandler = (error, request, response, next) => {
+    console.log(error.message)
+
+    if(error.name === 'CastError')
+        return response.status(400).send({error: 'malformatted id'})
+    else if (error.name === 'ValidationError')
+        return response.status(400).json({error: error.message})
+
+    next(error)
+}
+
 //middleware are called in order they are taken into use
 app.use(express.static('build'))
 app.use(cors())
 app.use(express.json()) // middleware for parsing json data and assigning it to request object as body parameter
 app.use(requestLogger) //used after json-parser because body parameter is provided by json-parser
-
-app.use(express.json())
 
 let notes = [
     {
@@ -90,68 +105,90 @@ let notes = [
     }
 ]
 
+/* ---HANDLERS FOR VARIOUSE ENDPOINTS--- */
+
 app.get('/', (request, response) => {
-    response.send('<h1>Hello World</h1>')
+    response.send('<h1>Backend for Notes</h1>')
 })
 
 //to get all the notes
 app.get('/api/notes', (request, response) => {
-    response.json(notes)
+    // fetching all the notes from db
+    Note
+        .find({})
+        .then(notes => {
+            response.json(notes)
+        })
 })
 
 //to get the specified note
-app.get('/api/notes/:id', (request, response) => {
+app.get('/api/notes/:id', (request, response, next) => {
     //id is received in string and should be parsed for comparison
-    const id = Number(request.params.id)
-    const note = notes.find(note => {
-        console.log(note.id, typeof note.id, id, typeof id, note.id === id)
-        return note.id === id
-    })
-    console.log(note)
-    if(note) response.json(note)
-    else response.status(404).end()
-    //here end() method is used to send the response without data
+    const id = request.params.id
+    Note
+        .findById(id)
+        .then(note => {
+            if(note) 
+                response.json(note)
+            else 
+                reponse.status(404).end()
+        })
+        .catch(error => next(error))
 })
 
 //to delete the specified note
-app.delete('/api/notes/:id', (request, response) => {
-    const id = Number(request.params.id)
-    notes = notes.filter(note => note.id !== id)
-    response.status(204).end()
+app.delete('/api/notes/:id', (request, response, next) => {
+    const id = request.params.id
+    Note
+        .findByIdAndRemove(id)
+        .then(result => {
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 })
 
-//receive a note
-const generateId = () => {
-    const maxId = notes.length > 0
-    // the spread operator ... is used to give the array as separate numbers
-    ? Math.max(...notes.map(n => n.id))
-    : 0
-    return maxId + 1
-}
-app.post('/api/notes', (request, response) => {
+//to create a note
+app.post('/api/notes', (request, response, next) => {
     const body = request.body
     console.log(body)
 
-    if(!body.content) {
-        return response.status(400).json({
-            error: 'content missing'
-        })
-    }
-
-    const note = {
+    const note = new Note({
         content: body.content, 
         important: body.important || false,
-        id: generateId()
-    }
+    })
 
-    notes = notes.concat(note)
-
-    response.json(note)
+    note
+        .save()
+        .then(savedNote => {
+            response.json(savedNote)
+        })
+        .catch(error => next(error))
 })
 
-app.use(unknownEndpoint)
+// to update a note
+app.put('/api/notes/:id', (request, response, next) => {
+    const {content, important} = request.body
+    const id = request.params.id
 
-const PORT = process.env.PORT || 3001
+    // notice the note is created without using Note constructor
+    const note = {
+        content: body.content,
+        important: body.important,
+    }
+
+    Note
+        .findByIdAndUpdate(id, note, {new: true, runValidators: true, context: 'query'}) // new: true is used to indicate that updatedNote is returned, runValidators is used for validating data against schema
+        .then(updatedNote => {
+            response.json(updatedNote)
+        })
+        .catch(error => next(error))
+})
+
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
+
+const PORT = process.env.PORT 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
