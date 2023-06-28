@@ -7,6 +7,8 @@ const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
 const notesRouter = require('./controllers/notes')
 
+require('express-async-errors') // for eliminating try-catch in async functions
+
 const app = express()
 
 // setting strict query to false will save the fields in db even if not mentioned in schema 
