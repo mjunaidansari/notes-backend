@@ -5,7 +5,9 @@ const mongoose = require('mongoose')
 const config = require('./utils/config')
 const logger = require('./utils/logger')
 const middleware = require('./utils/middleware')
+
 const notesRouter = require('./controllers/notes')
+const usersRouter = require('./controllers/users')
 
 require('express-async-errors') // for eliminating try-catch in async functions
 
@@ -31,6 +33,7 @@ app.use(express.json()) // middleware for parsing json data and assigning it to 
 app.use(middleware.requestLogger) //used after json-parser because body parameter is provided by json-parser
 
 app.use('/api/notes', notesRouter)
+app.use('/api/users', usersRouter)
 
 app.use(middleware.unknownEndpoint)
 app.use(middleware.errorHandler)

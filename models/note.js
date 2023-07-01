@@ -8,6 +8,11 @@ const noteSchema = new mongoose.Schema({
 		required: true
 	}, 
 	important: Boolean,
+	// user: {
+	// 	type: mongoose.Schema.Types.ObjectId,
+	// 	ref: 'User'
+	// }
+	user: String,
 })
 
 // transforming the incoming document into JSON having _id changed to id and removing the __v versioning field
