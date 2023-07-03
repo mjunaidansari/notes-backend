@@ -1,4 +1,6 @@
+const jwt = require('jsonwebtoken')
 const notesRouter = require('express').Router()
+
 const Note = require('../models/note')
 const User = require('../models/user')
 
@@ -39,10 +41,28 @@ notesRouter.get('/:id', async (request, response, next) => {
 })
 
 // creating a note
+
+// isolates the token from authorization header
+const getTokenFrom = request => {
+    const authorization = request.get('authorization')
+    console.log(authorization)
+    if(authorization && authorization.startsWith('bearer ')) {
+        console.log(authorization.replace('bearer ', ''))
+        return authorization.replace('bearer ', '')
+    }
+    return null
+}
+
 notesRouter.post('/', async (request, response, next) => {
     const body = request.body
 
-    const user = await User.findById(body.user)
+    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
+    if (!decodedToken.id)
+        return response.status(401).json({
+            error: 'invalid token!'
+        })
+
+    const user = await User.findById(decodedToken.id)
     console.log(user)
 
     const note = new Note({

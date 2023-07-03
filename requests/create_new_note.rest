@@ -1,8 +1,8 @@
 POST http://localhost:3001/api/notes 
 content-type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Imp1bmFpZCIsImlkIjoiNjQ5ZWY1NmQyNmZlNTc4ZTlhY2RkNjVhIiwiaWF0IjoxNjg4Mzc1ODgyfQ.qQRqTVaTlbqO4rlbVGzGwS0234HfruWu3OlZJqaYlho
 
 {
     "content": "Note to Junaid", 
-    "important": true,
-    "user": "649ef56d26fe578e9acdd65a"
+    "important": true
 }
