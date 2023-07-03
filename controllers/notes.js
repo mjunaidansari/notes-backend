@@ -40,14 +40,14 @@ notesRouter.get('/:id', async (request, response, next) => {
 
 // creating a note
 notesRouter.post('/', async (request, response, next) => {
-    const {content, important, userId} = request.body
+    const body = request.body
 
-    const user = await User.findById("649ef0da379eef48d1530dd6")
+    const user = await User.findById(body.user)
     console.log(user)
 
     const note = new Note({
-        content: content,
-        important: important,
+        content: body.content,
+        important: body.important,
         user: user.id
     })
 

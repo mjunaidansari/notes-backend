@@ -2,7 +2,7 @@ POST http://localhost:3001/api/notes
 content-type: application/json
 
 {
-    "content": "Note to root", 
+    "content": "Note to Junaid", 
     "important": true,
-    "user": "649ef0da379eef48d1530dd6"
+    "user": "649ef56d26fe578e9acdd65a"
 }
