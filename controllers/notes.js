@@ -47,7 +47,6 @@ const getTokenFrom = request => {
     const authorization = request.get('authorization')
     console.log(authorization)
     if(authorization && authorization.startsWith('bearer ')) {
-        console.log(authorization.replace('bearer ', ''))
         return authorization.replace('bearer ', '')
     }
     return null
